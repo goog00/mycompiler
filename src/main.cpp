@@ -35,6 +35,7 @@ int main(int argc, const char *argv[]) {
 
     // 输出解析得到的 AST, 其实就是个字符串
     // dump AST
+    freopen(output,"wr",stdout);
     ast->Dump();
     cout << endl;
     return 0;

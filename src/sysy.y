@@ -84,7 +84,8 @@ FuncType
   : INT {
     // $$ = new string("int");
     auto ast = new FuncTypeAST();
-    ast->type = *(new string("int"));
+//    ast->type = *(new string("int"));
+    ast->type = *(new string("i32"));
     $$ = ast;
   }
   ;

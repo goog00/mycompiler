@@ -25,9 +25,9 @@ public:
     // 用智能指针管理对象
     std::unique_ptr<BaseAST> func_def;
     void Dump() const override {
-        std::cout << "CompUnitAST { ";
+       // std::cout << "CompUnitAST { ";
         func_def->Dump();
-        std::cout << " }";
+       // std::cout << " }";
     }
 };
 
@@ -39,11 +39,15 @@ public:
     std::unique_ptr<BaseAST> block;
 
     void Dump() const override {
-        std::cout << "FuncDefAST { ";
+       // std::cout << "FuncDefAST { ";
+       std::cout << "fun ";
+       std::cout << "@" << ident << "(): ";
         func_type->Dump();
-        std::cout << ", " << ident << ", ";
+//        std::cout << ", " << ident << ", ";
+       std::cout <<"{ " << endl;
         block->Dump();
-        std::cout << " }";
+//        std::cout << " }";
+        std::cout << "}";
     }
 };
 
@@ -53,9 +57,10 @@ public:
     std::string type;
     void Dump() const override
     {
-        std::cout << "FuncTypeAST { ";
-        std::cout << type;
-        std::cout << " }";
+//        std::cout << "FuncTypeAST { ";
+//        std::cout << type;
+//        std::cout << " }";
+       std::cout << (type+" ");
     }
 };
 
@@ -67,9 +72,10 @@ public:
 
     void Dump() const override
     {
-        std::cout << "BlockAST { ";
+//        std::cout << "BlockAST { ";
+        std::cout << "%entry: "<<endl;
         stmt->Dump();
-        std::cout << " }";
+//        std::cout << " }";
     }
 };
 
@@ -80,9 +86,10 @@ public:
 
     void Dump() const override
     {
-        std::cout << "StmtAST { ";
-        std::cout << number;
-        std::cout << " }";
+//        std::cout << "StmtAST { ";
+//        std::cout << number;
+//        std::cout << " }";
+          std::cout << "ret" <<number<<endl;
     }
 };
 
