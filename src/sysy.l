@@ -58,6 +58,7 @@ Rel (\>\=)|(\<\=)|(\<)|(\>)
 "int"           { return INT; }
 "return"        { return RETURN; }
 
+"const"         {return CONST;}
 {Identifier}    { yylval.str_val = new string(yytext); return IDENT; }
 
 {Decimal}       { yylval.int_val = strtol(yytext, nullptr, 0); return INT_CONST; }
@@ -73,6 +74,6 @@ Rel (\>\=)|(\<\=)|(\<)|(\>)
 {Eq}            {yylval.str_val = new string(yytext);return Eq_CONST;}
 {Rel}           {yylval.str_val = new string(yytext);return Rel_CONST;}
 
-.               { return yytext[0]; }
+.               {return yytext[0]; }
 
 %%

@@ -3,6 +3,7 @@
   #include <string>
   #include <cstdio>
   #include <iostream>
+  #include <vector>
 
   #include <AST.h>
 }
@@ -37,11 +38,12 @@ using namespace std;
   char char_val;
   int int_val;
   BaseAST *ast_val;
+  vector<unique_ptr<BaseAST>> *ast_vector;
 }
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
-%token INT RETURN
+%token INT RETURN CONST
 %token <char_val> OP1_CONST
 %token <char_val> OP2_CONST
 //%token <char_val> OP3_CONST
@@ -55,6 +57,8 @@ using namespace std;
 
 // 非终结符的类型定义
 %type <ast_val> FuncDef FuncType Block Stmt Exp PrimaryExp UnaryExp AddExp MulExp LOrExp LAndExp EqExp RelExp
+%type <ast_val> Decl ConstDecl BType ConstDef ConstExp ConstInitVal BlockItem LVal VarDecl InitVal VarDef
+%type <ast_vector> BlockArray ConstArray VarArray
 %type <int_val> Number
 %type <str_val> OrOp
 %type <str_val> AndOp
@@ -112,24 +116,55 @@ FuncType
   ;
 
 Block
-  : '{' Stmt '}' {
+  : '{' BlockArray '}' {
 //    auto stmt = unique_ptr<string>($2);
 //    $$ = new string("{ " + *stmt + " }");
+
       auto ast = new BlockAST();
-      ast->stmt = unique_ptr<BaseAST>($2);
+      ast->BlockArray = unique_ptr<vector<unique_ptr<BaseAST>>>($2);
       $$ = ast;
   }
   ;
 
-Stmt
-  : RETURN Number ';' {
-//    auto number = unique_ptr<string>($2);
-//    $$ = new string("return " + *number + ";");
-      auto ast = new StmtAST();
-      ast->tag=0;
-      ast->number = int($2);
-      $$ = ast;
+BlockArray
+    : BlockArray BlockItem{
+       auto v=(vector<unique_ptr<BaseAST>> *)($1);
+       v->push_hack(std::move(unique_ptr<BaseAST>($2)));
+       $$=v;
+    }
+    |
+    {
+    $$ = new vector<unique_ptr<BaseAST>>();
+    }
+
+BlockItem
+  : Decl {
+    auto ast = new BlockItemAST();
+    ast->tag=0;
+    //ast->op=int($1)
+    ast->number = int($2);
+    ast->Decl=unique_ptr<BaseAST>($1);
+    $$ = ast;
   }
+
+  | Stmt {
+    auto ast = new BlockItemAST();
+    ast->tag=1;
+    ast->Stmt=unique_ptr<BaseAST>($1);
+    $$=ast;
+  }
+  ;
+
+
+Stmt
+  : LVal '=' Exp ';'{
+    auto ast = new StmtAST();
+    ast->tag=0;
+    ast->LVal=unique_ptr<BaseAST>($1);
+    ast->Exp=unique_ptr<BaseAST>($3);
+    $$=ast;
+  }
+
 
   | RETURN Exp ';' {
       auto ast = new StmtAST();
@@ -160,6 +195,13 @@ Exp
     ast->AddExp = unique_ptr<BaseAST>($1);
     $$ = ast;
   }
+  | LVal{
+      auto ast=new PrimaryExpAST();
+      ast->tag=2;
+      ast->LVal=unique_ptr<BaseAST>($1);
+      $$=ast;
+    }
+
 ;
 
 
@@ -348,6 +390,121 @@ Number
       $$ = ($1);
   }
   ;
+
+
+Decl
+  : ConstDecl{
+    auto ast = new DeclAST();
+    ast->tag=0;
+    ast->ConstDecl=unique_ptr<BaseAST>($1);
+    $$=ast;
+  }
+  | VarDecl{
+    auto ast = new DeclAST();
+    ast->tag=1;
+    ast->VarDecl=unique_ptr<BaseAST>($1);
+    $$=ast;
+  }
+  ;
+
+VarDecl
+  : BType VarDef VarArray ';'{
+    auto ast = new VarDeclAST();
+    ast->BType=unique_ptr<BaseAST>($1);
+    ast->VarArray=unique_ptr<vector<unique_ptr<BaseAST>>>($3);
+    ast->VarArray->push_back(std::move((unique_ptr<BaseAST>)($2)));
+    $$=ast;
+  };
+
+VarArray
+  : VarArray ',' VarDef{
+    auto v= (vector<unique_ptr<BaseAST>> *)($1);
+    v->push_back(std::move((unique_ptr<BaseAST>)($3)));
+    $$=v;
+  }
+  | {
+    $$=new vector<unique_ptr<BaseAST>>();
+  };
+
+VarDef
+  : IDENT{
+    auto ast=new VarDefAST();
+    ast->tag=0;
+    ast->IDENT=*unique_ptr<string>($1);
+    $$=ast;
+  }
+  | IDENT '=' InitVal {
+    auto ast=new VarDefAST();
+    ast->tag=1;
+    ast->IDENT=*unique_ptr<string>($1);
+    ast->InitVal=unique_ptr<BaseAST>($3);
+    $$=ast;
+  };
+
+
+ConstDecl
+  : CONST BType ConstDef ConstArray ';'{
+    auto ast = new ConstDeclAST();
+    ast->BType=unique_ptr<BaseAST>($2);
+    ast->ConstArray=unique_ptr<vector<unique_ptr<BaseAST>>>($4);
+    ast->ConstArray->push_back(std::move((unique_ptr<BaseAST>)($3)));
+    $$=ast;
+  };
+
+ConstArray
+  : ConstArray ',' ConstDef{
+    auto v= (vector<unique_ptr<BaseAST>> *)($1);
+    v->push_back(std::move((unique_ptr<BaseAST>)($3)));
+    $$=v;
+  }
+  | {
+    $$=new vector<unique_ptr<BaseAST>>();
+  };
+
+
+BType
+  : INT {
+    auto ast=new BTypeAST();
+    $$=ast;
+  };
+
+LVal
+  : IDENT{
+    auto ast=new LValAST();
+    ast->IDENT=*unique_ptr<std::string>($1);
+    $$=ast;
+  };
+
+ConstDef
+  : IDENT '=' ConstInitVal {
+    auto ast=new ConstDefAST();
+    ast->IDENT=*unique_ptr<string>($1);
+    ast->ConstInitVal=unique_ptr<BaseAST>($3);
+    $$=ast;
+  };
+
+ConstInitVal
+  : ConstExp{
+    auto ast=new ConstInitValAST();
+    ast->ConstExp=unique_ptr<BaseAST>($1);
+    $$=ast;
+  };
+
+InitVal
+  : Exp{
+    auto ast=new InitValAST();
+    ast->Exp=unique_ptr<BaseAST>($1);
+    $$=ast;
+  };
+
+ConstExp
+  : Exp
+  {
+    auto ast=new ConstExpAST();
+    ast->Exp=unique_ptr<BaseAST>($1);
+    $$=ast;
+  };
+
 
 
 %%
