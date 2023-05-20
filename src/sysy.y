@@ -129,7 +129,7 @@ Block
 BlockArray
     : BlockArray BlockItem{
        auto v=(vector<unique_ptr<BaseAST>> *)($1);
-       v->push_hack(std::move(unique_ptr<BaseAST>($2)));
+       v->push_back(std::move(unique_ptr<BaseAST>($2)));
        $$=v;
     }
     |
@@ -142,7 +142,6 @@ BlockItem
     auto ast = new BlockItemAST();
     ast->tag=0;
     //ast->op=int($1)
-    ast->number = int($2);
     ast->Decl=unique_ptr<BaseAST>($1);
     $$ = ast;
   }

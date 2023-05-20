@@ -11,6 +11,7 @@
 #include <cstring>
 #include <map>
 #include <cassert>
+#include <vector>
 
 
 using namespace std;
@@ -39,6 +40,9 @@ static int u_value = 0;
 
 static int now_value = 0;
 static string u_ident;
+static int return_cnt = 0;
+
+
 
 
 static const void extract_ref(int,int,int);
@@ -72,21 +76,7 @@ public:
 
       virtual ~BaseAST() = default;
       virtual void Dump() const = 0;
-    {
-    public:
-//        std::unique_ptr<BaseAST> stmt;
-        std::unique_ptr<vector<unique_ptr<BaseAST>> BlockArray;
 
-        void Dump() const override {
-
-                std::cout << "%entry: "<<endl;
-
-                for(auto iter = (BlockArray->begin()); iter != (BlockArray->end()); ++iter){
-                    (*iter)->Dump();
-                }
-        }
-
-    }
 
 };
 
@@ -102,7 +92,7 @@ public:
         switch (tag)
         {
             case 0:
-                if(return>cnt > 0)
+                if(return_cnt > 0)
                     break;
                 Decl->Dump();
                 break;
@@ -168,14 +158,18 @@ class BlockAST : public BaseAST
 {
 public:
 
-    std::unique_ptr<BaseAST> stmt;
+//    std::unique_ptr<BaseAST> stmt;
+    std::unique_ptr<vector<unique_ptr<BaseAST>>> BlockArray;
 
     void Dump() const override
     {
 //        std::cout << "BlockAST { ";
         std::cout << "%entry: "<<endl;
-        stmt->Dump();
-//        std::cout << " }";
+        for (auto iter = (BlockArray->begin()); iter != (BlockArray->end()); ++iter)
+        {
+            (*iter)->Dump();
+        }
+
     }
 };
 
@@ -734,7 +728,7 @@ public:
                 now_value = number;
                 break;
             case 2:
-                Lval->Dump();
+                LVal->Dump();
                 int type = symbolTable[u_ident]->tag;
                 switch (type) {
                     case 0:
@@ -747,8 +741,7 @@ public:
                         break;
                 }
                 break;
-            default:
-                break;
+
         }
         // std::cout << " }";
     }
@@ -765,12 +758,12 @@ public:
     {
         switch (tag) {
             case 0:
-                std::cout << " ret " << number<<endl;
+//                std::cout << " ret " << number<<endl;
                 ConstDecl->Dump();
                 break;
             case 1:
-                Exp->Dump();
-                if(t_value==0)
+//                Exp->Dump();
+//                if(t_value==0)
                 VarDecl->Dump();
                 break;
 
@@ -789,7 +782,7 @@ public:
         BType->Dump();
         auto ptr = ConstArray->rbegin();
         (*ptr)->Dump();
-        for(auto iter = (ConstArray->begin()); (iter != ConstArray->endl()-1);++iter)
+        for(auto iter = (ConstArray->begin()); (iter != ConstArray->end()-1);++iter)
         {
             (*iter)->Dump();
         }
@@ -808,7 +801,7 @@ public:
     {
         BType->Dump();
         auto ptr = VarArray->rbegin();
-        (*ptr)-Dump();
+        (*ptr)->Dump();
 
         for(auto iter = VarArray->begin();iter != (VarArray->end()-1);++iter)
         {
@@ -859,19 +852,33 @@ public:
     }
 };
 
-class ConstDeclAST : public BaseAST
+//class ConstDeclAST : public BaseAST
+//{
+//public :
+//    std::string IDENT;
+//    std::unique_ptr<BaseAST> ConstInitVal;
+//
+//    void Dump() const override
+//    {
+//        ConstInitVal->Dump();
+//        int con_value = now_value;
+//        symbolTable.emplace(IDENT,make_unique<symbol>(0, con_value));
+//    }
+//};
+
+class ConstDefAST : public BaseAST
 {
-public :
+public:
     std::string IDENT;
     std::unique_ptr<BaseAST> ConstInitVal;
-
     void Dump() const override
     {
         ConstInitVal->Dump();
         int con_value = now_value;
-        symbolTable.emplace(IDENT,make_unique<symbol>(0, con_value));
+        symbolTable.emplace(IDENT,make_unique<symbol>(0,con_value));
     }
 };
+
 
 class BTypeAST : public BaseAST
 {
@@ -922,14 +929,14 @@ public:
 
     void Dump() const override
     {
-        stringstream ss;
-        stringbuf* buffer = cout.rdbuf();
-        std::cout.rdbuf(ss.rdbuf);
-        int o_value = t_value;
+//        stringstream ss;
+//        stringbuf* buffer = cout.rdbuf();
+//        std::cout.rdbuf(ss.rdbuf);
+//        int o_value = t_value;
         Exp->Dump();
-        t_value = o_value;
-        string s(ss.str());
-        std::cout.rdbuf(buffer);
+//        t_value = o_value;
+//        string s(ss.str());
+//        std::cout.rdbuf(buffer);
     }
 };
 // ...
