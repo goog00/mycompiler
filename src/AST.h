@@ -102,9 +102,14 @@ public:
         switch (tag)
         {
             case 0:
+                if(return>cnt > 0)
+                    break;
                 Decl->Dump();
                 break;
             case 1:
+                if(return_cnt>0){
+                    break;
+                }
                 Stmt->Dump();
                 break;
 
@@ -212,10 +217,11 @@ public:
                   }
                   break;
               case 1:
+
                   o_value = t_value;
                   Exp->Dump();
-                  //?????
-                  if(t_value == 0)
+                  ++return_cnt;
+                  if(t_value == o_value)
                   {
                       std::cout << "  ret " <<u_value<<endl;
                   }
