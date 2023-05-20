@@ -38,6 +38,8 @@ const string extract_koopa(unique_ptr<BaseAST> &ast)
 
 
 int main(int argc, const char *argv[]) {
+
+    cout << "ddddd" << endl;
     // 解析命令行参数. 测试脚本/评测平台要求你的编译器能接收如下参数:
     // compiler 模式 输入文件 -o 输出文件
     assert(argc == 5);
@@ -70,8 +72,10 @@ int main(int argc, const char *argv[]) {
             fputs(koopa.c_str(),fp);
         }
 
+    cout << "mode " << mode << endl;
         if(strcmp(mode,"-riscv")==0)
         {
+            //生成ast
             const auto koopa = extract_koopa(ast);
 
             //解析字符串 str,得到Koopa IR程序
@@ -83,6 +87,7 @@ int main(int argc, const char *argv[]) {
             koopa_raw_program_t raw = koopa_build_raw_program(builder,program);
             //释放Koopa IR 程序占用内存
             koopa_delete_program(program);
+
 
             stringstream ss;
             streambuf* buffer = cout.rdbuf();

@@ -24,6 +24,7 @@ void Visit(const koopa_raw_return_t &);
 
 
 void Visit(const koopa_raw_program_t &program) {
+    cout << "wwww22" << endl;
     // 执行一些其他的必要操作
     // ...
     // 访问所有全局变量
@@ -37,9 +38,11 @@ void Visit(const koopa_raw_program_t &program) {
 
 
 void Visit(const koopa_raw_slice_t &slice) {
+
     for (size_t i = 0; i < slice.len; ++i) {
         auto ptr = slice.buffer[i];
         // 根据 slice 的 kind 决定将 ptr 视作何种元素
+
         switch (slice.kind) {
             case KOOPA_RSIK_FUNCTION:
                 // 访问函数
@@ -62,6 +65,7 @@ void Visit(const koopa_raw_slice_t &slice) {
 
 // 访问函数
 void Visit(const koopa_raw_function_t &func) {
+
     // 执行一些其他的必要操作
     // ...
     const auto &func_name = func->name;
@@ -99,7 +103,7 @@ void Visit(const koopa_raw_value_t &value) {
     }
 }
 
-void Visit(const koopa_raw_return_t & ret)
+void Visit(const koopa_raw_return_t &ret)
 {
     const auto &ret_value = ret.value;
     assert(ret_value->kind.tag == KOOPA_RVT_INTEGER);

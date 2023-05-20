@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <cstdio>
 
 // 因为 Flex 会用到 Bison 中关于 token 的定义
 // 所以需要 include Bison 生成的头文件
@@ -19,9 +20,6 @@ using namespace std;
 WhiteSpace    [ \t\n\r]*
 LineComment   "//".*
 
-
-
-
 /* 标识符 */
 Identifier    [a-zA-Z_][a-zA-Z0-9_]*
 
@@ -30,10 +28,19 @@ Decimal       [1-9][0-9]*
 Octal         0[0-7]*
 Hexadecimal   0[xX][0-9a-fA-F]+
 
+MulExpOperator [\*\/\%]
+AddExpOperator [\+\-]
+Or \|\|
+And \&\&
+Eq \=\=|\!\=
+Rel (\>\=)|(\<\=)|(\<)|(\>)
+
 
 
 %x COMMENT
 
+
+/*转换规则 模式  {动作}*/
 %%
 "/*" {BEGIN(COMMENT);}
 <COMMENT>"*/"        {BEGIN(INITIAL);}
@@ -54,8 +61,17 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 {Identifier}    { yylval.str_val = new string(yytext); return IDENT; }
 
 {Decimal}       { yylval.int_val = strtol(yytext, nullptr, 0); return INT_CONST; }
+
 {Octal}         { yylval.int_val = strtol(yytext, nullptr, 0); return INT_CONST; }
+
 {Hexadecimal}   { yylval.int_val = strtol(yytext, nullptr, 0); return INT_CONST; }
+
+{AddExpOperator} {yylval.char_val=yytext[0];return OP1_CONST;}
+{MulExpOperator} {yylval.char_val=yytext[0];return OP2_CONST;}
+{Or}             {yylval.str_val = new string(yytext);return Or_CONST;}
+{And}           {yylval.str_val = new string(yytext);return And_CONST;}
+{Eq}            {yylval.str_val = new string(yytext);return Eq_CONST;}
+{Rel}           {yylval.str_val = new string(yytext);return Rel_CONST;}
 
 .               { return yytext[0]; }
 
